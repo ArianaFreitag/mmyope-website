@@ -56,7 +56,11 @@ async function get_book(book_id) {
     // console.log(JSON.parse(fixed_paths));
 
     for (const path of JSON.parse(fixed_paths)) {
-      get_file(path);
+      // get_file(path);
+      // const imageURL = URL.createObjectURL(blob);
+      element_id = path.split("/").at(-1).split(".")[0];
+      const img = document.getElementById(element_id);
+      img.src = "images/" + path;
     }
 
     return true;
