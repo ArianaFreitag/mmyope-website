@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ArianaFreitag/mmyope-backend/pkg/server"
+	"github.com/ArianaFreitag/mmyope-website/pkg/server"
 )
 
 func main() {

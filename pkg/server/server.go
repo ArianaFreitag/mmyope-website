@@ -14,34 +14,19 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/ArianaFreitag/mmyope-backend/pkg/models"
+	"github.com/ArianaFreitag/mmyope-website/pkg/models"
 )
 
 const keyServerAddr = "serverAddr"
 
 // do this correctly, toggle local vs not, use secrets, etc
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "admin"
-	password = "into-myDB"
+	host     = "db-postgres-mmyope-do-user-22616298-0.g.db.ondigitalocean.com"
+	port     = 25060
+	user     = "doadmin"
+	password = ""
 	dbname   = "mmyope"
 )
-
-// var originAllowlist = []string{
-// 	"http://127.0.0.1:9999",
-// }
-
-// func checkCORS(next http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		origin := r.Header.Get("Origin")
-// 		if slices.Contains(originAllowlist, origin) {
-// 			w.Header().Set("Access-Control-Allow-Origin", origin)
-// 		}
-// 		w.Header().Add("Vary", "Origin")
-// 		next.ServeHTTP(w, r)
-// 	})
-// }
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
@@ -126,12 +111,8 @@ func getImages(w http.ResponseWriter, r *http.Request) {
 func Start() {
 	var err error
 
-	fs := http.FileServer(http.Dir("/images"))
-	http.Handle("/images", http.StripPrefix("/images", fs))
-	// http.Handle("/image", handler)
-
 	psqlInfo := fmt.Sprintf(
-		"host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
+		"host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=require",
 		host, port, user, password, dbname)
 
 	models.DB, err = sql.Open("postgres", psqlInfo)
@@ -141,21 +122,26 @@ func Start() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", getRoot)
+	fileserver := http.FileServer(http.Dir("static"))
+
+	// mux.HandleFunc("/", getRoot)
 	mux.HandleFunc("/getBooks", getBooks)
 	mux.HandleFunc("/getBook", getBook)
 	mux.HandleFunc("/getImages", getImages)
+	mux.Handle("/", fileserver)
 
 	ctx := context.Background()
 
 	server := &http.Server{
-		Addr:    ":3333",
+		Addr:    ":8080",
 		Handler: mux,
 		BaseContext: func(l net.Listener) context.Context {
 			ctx = context.WithValue(ctx, keyServerAddr, l.Addr().String())
 			return ctx
 		},
 	}
+	fmt.Printf("Server listening on port %s\n", "8080")
+	// http.ListenAndServe()
 
 	err = server.ListenAndServe()
 	if errors.Is(err, http.ErrServerClosed) {

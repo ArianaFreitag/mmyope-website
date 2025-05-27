@@ -1,4 +1,4 @@
-module github.com/ArianaFreitag/mmyope-backend
+module github.com/ArianaFreitag/mmyope-website
 
 go 1.24.0
 
